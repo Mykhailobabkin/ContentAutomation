@@ -247,7 +247,7 @@ class GeminiRequest:
             print(f"An error occurred: {e}")
             return None
 
-    def generate_video_w_images(self, prompt: str, image_path):
+    def generate_video_w_images(self, prompt: str, image_path, output_path: str):
         """
         Generates a video using Gemini API with an input image.
         
@@ -296,7 +296,7 @@ class GeminiRequest:
             
             video = operation.response.generated_videos[0]
             self.client.files.download(file=video.video)
-            video.video.save("video1.mp4")
+            video.video.save(output_path)
             
             print("Video generated successfully!")
             
