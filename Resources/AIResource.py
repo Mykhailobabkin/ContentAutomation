@@ -24,7 +24,7 @@ class OpenAIRequest:
         self.model = model
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    def send_request(self, prompt: str, promt1: str = None, promt2: str = None, promt3: str = None):
+    def send_request(self, prompt: str, prompt1: str = None, prompt2: str = None, prompt3: str = None):
         """
         Sends a prompt to the OpenAI API with optional additional messages.
         
@@ -37,12 +37,12 @@ class OpenAIRequest:
         """
         try:
             messages = [{"role": "developer", "content": prompt}]
-            if promt1:
-                messages.append({"role": "user", "content": promt1})
-            if promt2:
-                messages.append({"role": "user", "content": promt2})
-            if promt3:
-                messages.append({"role": "user", "content": promt3})
+            if prompt1:
+                messages.append({"role": "user", "content": prompt1})
+            if prompt2:
+                messages.append({"role": "user", "content": prompt2})
+            if prompt3:
+                messages.append({"role": "user", "content": prompt3})
             response = self.client.responses.create(
                 model=self.model,
                 input=messages
@@ -63,7 +63,7 @@ class OpenAIRequest:
             str: The output text from the response, or None if an error occurs.
         """
         try: 
-            response = self.client.response.create(
+            response = self.client.responses.create(
                 model=self.model,
                 tools=[{
                     "type": "web_search",

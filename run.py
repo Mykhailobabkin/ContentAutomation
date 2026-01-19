@@ -3,22 +3,23 @@ import cv2
 from moviepy import VideoFileClip, concatenate_videoclips
 import os
 
-
 from Resources.AIResource import OpenAIRequest
 from Resources.AIResource import GeminiRequest
 
 r1 = OpenAIRequest("gpt-4.1")
 r2 = GeminiRequest("gemini-2.5-flash")
-r3 = GeminiRequest("veo-3.0-fast-generate-001")
+r3 = GeminiRequest("veo-3.1-generate-preview")
 
-number_of_scenes = 3
+animal = "Human-like Yeti"
 
-animal = "Elephant"
+idea = """The OpenAI chatbot will now officially display advertising for Go and Free tariffs 🤑
 
+They promise not to advertise the cross, but instead, the traders will remove more limits to GPT (although not exactly). The first “feature” to be rolled out to the pros in the USA.
+
+Here's how other companies react"""
+
+number_of_scenes = 2
 seconds = (number_of_scenes*8) - 4
-
-video_path = "video.mp4"
-image_path = "last_frame.jpg"
 
 def extract_last_frame(video_path, image_path):
     """
@@ -101,10 +102,8 @@ def concatenate_videos(video1_path, video2_path, output_path, method='compose'):
 
 def run():
 
-    idea = r2.internet_search(prompt="Generate me one video idea with recent AI news")
-    print("Idea Done \n")
-
-    script = r1.send_request(prompt=f"Generate me an audio script for a {seconds} second video about this idea: {idea}. The script should be exactly 16 seconds long when spoken out loud and should include only text, no audio effects or other descriptions, return only the scripyt, no other text.")
+    script = r2.internet_search(prompt=f"""Generate me an audio script for a {seconds} second video about this: {idea}"
+                             The script should be exactly 16 seconds long when spoken out loud and should include only text, no audio effects or other descriptions, return only the scripyt, no other text. Make sure the script will be interesting, and will grab user's attention from the first seconds and will keep it throughout the whole video """)
     print("Script Done \n")
 
     video_prompt = r1.send_request(prompt = f"""
@@ -115,7 +114,7 @@ def run():
 
         1. Character Descriptions: [{animal}, with a masculine and clear voice]
 
-        2. Main Scene Description: [Character sitting behind a taks and saying that: {script}. Make sure to split the audioscript into 2 scenes evenly, so the video won't break in a middle of a word. Each scene should be exactly 8 seconds long]
+        2. Main Scene Description: [Character sitting behind a taks and saying that: {script}. Make sure to split the audioscript into {number_of_scenes} scenes evenly, so the video won't break in a middle of a word. Each scene should be exactly 8 seconds long]
 
         3. Number of Scenes: [{number_of_scenes}]
 
@@ -145,6 +144,10 @@ def run():
         Scene 2 (Image-to-Video):
         [Your prompt here]
 
+        ///
+
+        Scene 3 (Image-to-Video):
+        [Your prompt here]
 
         📌 Prompt writing basics
         Good prompts are descriptive and clear. To get the most out of Veo, start with identifying your core idea, refine your idea by adding keywords and modifiers, and incorporate video-specific terminology into your prompts.
@@ -162,37 +165,51 @@ def run():
         Use descriptive language: Use adjectives and adverbs to paint a clear picture for Veo.
         Enhance the facial details: Specify facial details as a focus of the photo like using the word portrait in the prompt.
 
+
+        Make sure the video will be interesting, and will grab user's attention from the first seconds and will keep it throughout the whole video 
         """
     )
 
     video_prompt_1 = video_prompt.split("///")[0].replace("Scene 1 (Text-to-Video):", "").strip()
     video_prompt_2 = video_prompt.split("///")[1].replace("Scene 2 (Image-to-Video):", "").strip()
+    # video_prompt_3 = video_prompt.split("///")[2].replace("Scene 3 (Image-to-Video):", "").strip() 
+    # video_prompt_4 = video_prompt.split("///")[3].replace("Scene 4 (Image-to-Video):", "").strip()
 
-    video_prompt_3 = video_prompt.split("///")[2].replace("Scene 3 (Image-to-Video):", "").strip()
+    print(f"{video_prompt_1} \n\n {video_prompt_2}")
 
-    print(f"\n{video_prompt_1} \n\n {video_prompt_2} \n\n {video_prompt_3} \n")
+    answer = str(input("Yes or No:  "))
+
+    if answer.lower().strip() == "y": 
+        print()
+        r3.generate_video(prompt=video_prompt_1)
+        print("Video 1 Done \n")
+        extract_last_frame("video.mp4", "last_frame.jpg")
+
+        r3.generate_video_w_images(prompt=video_prompt_2, image_path="last_frame.jpg", output_path="video1.mp4")
+        extract_last_frame("video1.mp4", "last_frame.jpg")
+        print("Video 2 Done \n")
 
 
-    r3.generate_video(prompt=video_prompt_1)
-    print("Video 1 Done \n")
-    extract_last_frame(video_path, image_path)
+        concatenate_videos("video.mp4", "video1.mp4", "2_video.mp4", method='compose')
+        os.remove("video.mp4")
+        os.remove("video1.mp4")
+        print("2 videos Done")
 
-    r3.generate_video_w_images(prompt=video_prompt_2, image_path=image_path, output_path="video1.mp4")
-    print("Video 2 Done \n")
-    extract_last_frame(video_path, image_path)
+        # r3.generate_video_w_images(prompt=video_prompt_3, image_path="last_frame.jpg", output_path="video2.mp4")
+        # extract_last_frame("video2.mp4", "last_frame.jpg")
+        # print("Video 3 Done")
 
-    concatenate_videos("video.mp4", "video1.mp4", "2_video.mp4", method='compose')
-    os.remove("video.mp4")
-    os.remove("video1.mp4")
-    print("2 videos Done")
+        # concatenate_videos("2_video.mp4", "video2.mp4", "final_video.mp4", method='compose')
 
-    r3.generate_video_w_images(prompt=video_prompt_3, image_path=image_path, output_path="video2.mp4")
-    print("Video 3 Done")
+        # os.remove("video2.mp4")
+        # os.remove("2_video.mp4")
 
-    concatenate_videos("2_video", "video2.mp4", "final_video.mp4", method='compose')
-    os.remove("video2.mp4")
-    os.remove("2_video.mp4")
-    print("Final videos done")
+        # os.remove("last_frame.jpg")
+    
+        print("Final videos are done")
+
+    else:
+        return
 
 if __name__ == "__main__":
     run()
